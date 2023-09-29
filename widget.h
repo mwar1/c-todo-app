@@ -14,7 +14,7 @@ typedef struct Button {
 	SDL_Texture *tex;
 } Button;
 
-Button createButton(SDL_Renderer*, char*, int, int, int, void (*function));
+Button createButton(SDL_Renderer *r, char *text, int w, int h, int fontSize, void (*function));
 
 typedef struct Date {
 	int day, month, year;
@@ -29,7 +29,7 @@ typedef struct Task {
 	int textW, textH, dateW, dateH;
 } Task;
 
-Task createTask(SDL_Renderer*, char*, int, int, int);
+Task createTask(SDL_Renderer *r, char *taskText, int day, int month, int year);
 
 // Linked List functions
 typedef struct Node {
@@ -37,11 +37,11 @@ typedef struct Node {
 	struct Node *next;
 } Node;
 
-void listInsert(Node*, int, Task);
-void listPush(Node*, Task);
-Task* listGetFirst(Node**);
-Task* listPop(Node*);
-Task* listRemove(Node**, int);
+void listInsert(Node *head, int pos, Task val);
+void listPush(Node *head, Task val);
+Task* listGetFirst(Node **head);
+Task* listPop(Node *head);
+Task* listRemove(Node **head, int pos);
 
 void drawButtonBackground(SDL_Renderer *r, SDL_Rect *buttonRect);
-void drawTaskList(SDL_Renderer*, Node*, int, int, int, int, int);
+void drawTaskList(SDL_Renderer *r, Node *head, int i, int listX, int listY, int taskWidth, int taskHeight);
