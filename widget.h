@@ -7,14 +7,13 @@
 #define PADDING_PX 8
 
 typedef struct Button {
-	void (*function)(void);
-
 	int w, h;
 	int textW, textH;
 	SDL_Texture *tex;
 } Button;
 
-Button createButton(SDL_Renderer *r, char *text, int w, int h, int fontSize, void (*function));
+Button createButton(SDL_Renderer *r, char *text, int w, int h, int fontSize);
+bool isButtonClicked(SDL_Rect *buttonRect, int mouseX, int mouseY);
 
 typedef struct Date {
 	int day, month, year;
@@ -27,6 +26,7 @@ typedef struct Task {
 	bool complete;
 	SDL_Texture *textTex, *dateTex;
 	int textW, textH, dateW, dateH;
+	SDL_Rect doneRect, editRect;
 } Task;
 
 Task createTask(SDL_Renderer *r, char *taskText, int day, int month, int year);
@@ -38,7 +38,7 @@ typedef struct Node {
 } Node;
 
 void listInsert(Node *head, int pos, Task val);
-void listPush(Node *head, Task val);
+void listPush(Node *head, Task val, bool init);
 Task* listGetFirst(Node **head);
 Task* listPop(Node *head);
 Task* listRemove(Node **head, int pos);

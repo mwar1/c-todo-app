@@ -1,13 +1,12 @@
 #include "widget.h"
 
-Button createButton(SDL_Renderer *r, char* text, int w, int h, int fontSize, void (*function)) {
+Button createButton(SDL_Renderer *r, char* text, int w, int h, int fontSize) {
 	TTF_Init();
 
 	Button newButton;
 
 	newButton.w = w;
 	newButton.h = h;
-	newButton.function = function;
 
 	TTF_Font *font = TTF_OpenFont("res/font.otf", fontSize);
 	SDL_Surface *textSurf = TTF_RenderText_Solid(font, text, (SDL_Color) {0, 0, 0, 255});
@@ -22,9 +21,15 @@ Button createButton(SDL_Renderer *r, char* text, int w, int h, int fontSize, voi
 	return newButton;
 }
 
+bool isButtonClicked(SDL_Rect *buttonRect, int mouseX, int mouseY) {
+	SDL_Rect mouseRect = {mouseX, mouseY, 1, 1};
+
+	return SDL_HasIntersection(buttonRect, &mouseRect);
+}
+
 Task createTask(SDL_Renderer *r, char *taskText, int day, int month, int year) {
-	Button editButton = createButton(r, "Edit", 70, 50, 24, NULL);
-	Button tickButton = createButton(r, "Done", 70, 50, 24, NULL);
+	Button tickButton = createButton(r, "Done", 70, 50, 24);
+	Button editButton = createButton(r, "Edit", 70, 50, 24);
 	Date newDate = {day, month, year};
 	Task newTask = {tickButton, editButton, newDate, taskText, false};
 
@@ -63,9 +68,18 @@ void listInsert(Node *head, int pos, Task val) {
 }
 
 
-void listPush(Node *head, Task val) {
+void listPush(Node *head, Task val, bool init) {
     // Add to the end of the linked list
-    Node *current = head;
+	// 'init' is used to signal this is the first push to the linked list
+	if (init) {
+		head->data = val;
+		head->next = NULL;
+		return;
+	}
+	
+	Node *current;
+
+	current = head;
 	while (current->next != NULL) {
 		current = current->next;
 	}
@@ -149,7 +163,6 @@ void drawButtonBackground(SDL_Renderer *r, SDL_Rect *buttonRect) {
 
 void displayTasks(SDL_Renderer *r, Node *head, int i, int listX, int listY, int taskWidth, int taskHeight) {
 	TTF_Init();
-
 	if (head == NULL) return;
 	Task cur = head->data;
 
@@ -164,6 +177,9 @@ void displayTasks(SDL_Renderer *r, Node *head, int i, int listX, int listY, int 
 	SDL_Rect doneRect = {taskRect.x + PADDING_PX, taskRect.y + taskRect.h/2 - cur.tickBoxButton.textH, cur.tickBoxButton.w, cur.tickBoxButton.h};
 	SDL_Rect editRect = {taskRect.x + taskRect.w - PADDING_PX - cur.editButton.w, taskRect.y + taskRect.h/2 - cur.editButton.textH, cur.editButton.w, cur.editButton.h};
 	SDL_Rect dateRect = {editRect.x - cur.dateW - PADDING_PX, taskRect.y + taskRect.h/2 - cur.dateH/2, cur.dateW, cur.textH};
+
+	head->data.doneRect = doneRect;
+	head->data.editRect = editRect;
 
 	if (cur.textW > dateRect.x - doneRect.x - doneRect.w - PADDING_PX) cur.textW = dateRect.x - doneRect.x - doneRect.w - PADDING_PX;
 	if (cur.textH > taskHeight - PADDING_PX*2) cur.textH = taskHeight - PADDING_PX*2;
