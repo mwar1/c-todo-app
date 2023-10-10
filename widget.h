@@ -15,6 +15,24 @@ typedef struct Button {
 Button createButton(SDL_Renderer *r, char *text, int w, int h, int fontSize);
 bool isButtonClicked(SDL_Rect *buttonRect, int mouseX, int mouseY);
 
+typedef struct TextBox {
+	int x, y;
+	int w, h;
+	char *text, *defaultText;
+	int textW, textH;
+	size_t textLength;
+	SDL_Texture *textTex;
+	int fontSize;
+	bool active;
+} TextBox;
+
+TextBox createTextBox(SDL_Renderer *r, int x, int y, int w, int h, int fontSize, char *defaultText);
+char* getText(TextBox *box);
+int addText(TextBox *box, char c);
+int backspace(TextBox *box);
+void updateBox(SDL_Renderer *r, TextBox *box);
+bool isTextBoxClicked(TextBox *box, int mouseX, int mouseY);
+
 typedef struct Date {
 	int day, month, year;
 } Date;
@@ -45,3 +63,4 @@ Task* listRemove(Node **head, int pos);
 
 void drawButtonBackground(SDL_Renderer *r, SDL_Rect *buttonRect);
 void drawTaskList(SDL_Renderer *r, Node *head, int i, int listX, int listY, int taskWidth, int taskHeight);
+void drawTextBox(SDL_Renderer *r, TextBox *box);

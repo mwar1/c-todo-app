@@ -27,6 +27,78 @@ bool isButtonClicked(SDL_Rect *buttonRect, int mouseX, int mouseY) {
 	return SDL_HasIntersection(buttonRect, &mouseRect);
 }
 
+TextBox createTextBox(SDL_Renderer *r, int x, int y, int w, int h, int fontSize, char* defaultText) {
+	TextBox box;
+	box.x = x;
+	box.y = y;
+	box.w = w;
+	box.h = h;
+	box.defaultText = defaultText;
+	box.text = malloc(1);
+	box.text[0] = '\0';
+	box.textLength = 0;
+	box.textW, box.textH = 0;
+	box.fontSize = fontSize;
+	box.active = false;
+	updateBox(r, &box);
+
+	return box;
+}
+
+char* getText(TextBox *box) {
+	// Get the string of text which has been typed into the box
+	return box->text;
+}
+
+int addText(TextBox *box, char c) {
+	// Add a single character to the textbox
+	// Returns 0 on success, 1 otherwise
+
+	box->textLength++;
+	box->text = realloc(box->text, box->textLength+1);
+	box->text[box->textLength-1] = c;
+	box->text[box->textLength] = '\0';
+
+	return 0;
+}
+
+int backspace(TextBox *box) {
+	// Remove a single character from the text in the textbox
+	// Returns 0 on success, 1 otherwise
+	if (box->textLength == 0) return 1;
+
+	box->textLength--;
+	box->text = realloc(box->text, box->textLength+1);
+	box->text[box->textLength] = '\0';
+
+	return 0;
+}
+
+void updateBox(SDL_Renderer *r, TextBox *box) {
+	TTF_Font *font = TTF_OpenFont("res/font.otf", box->fontSize);
+	int newW, newH;
+	
+	SDL_Surface *textSurf;
+	if (box->textLength == 0) {
+		textSurf = TTF_RenderText_Solid(font, box->defaultText, (SDL_Color) {100, 100, 100, 255});
+		TTF_SizeText(font, box->defaultText, &newW, &newH);
+	} else {
+		textSurf = TTF_RenderText_Solid(font, box->text, (SDL_Color) {0, 0, 0, 255});
+		TTF_SizeText(font, box->text, &newW, &newH);
+	}
+	box->textW = newW;
+	box->textH = newH;
+
+	box->textTex = SDL_CreateTextureFromSurface(r, textSurf);
+}
+
+bool isTextBoxClicked(TextBox *box, int mouseX, int mouseY) {
+	SDL_Rect mouseRect = {mouseX, mouseY, 1, 1};
+	SDL_Rect boxRect = {box->x, box->y, box->w, box->h};
+
+	return SDL_HasIntersection(&boxRect, &mouseRect);
+}
+
 Task createTask(SDL_Renderer *r, char *taskText, int day, int month, int year) {
 	Button tickButton = createButton(r, "Done", 70, 50, 24);
 	Button editButton = createButton(r, "Edit", 70, 50, 24);
@@ -221,3 +293,17 @@ void drawTaskList(SDL_Renderer *r, Node* taskListHead, int x, int y, int taskHei
 	displayTasks(r, taskListHead, 0, x, y, taskListWidth - 2*PADDING_PX, taskHeight);
 }
 
+void drawTextBox(SDL_Renderer *r, TextBox *box) {
+	// Draw a textbox to the screen at position x, y
+	if (box->active) {
+		SDL_SetRenderDrawColor(r, 200, 200, 200, 255);
+	} else {
+		SDL_SetRenderDrawColor(r, 220, 220, 220, 255);
+	}
+
+	SDL_Rect rect = {box->x, box->y, box->w, box->h};
+	SDL_RenderFillRect(r, &rect);
+
+	SDL_Rect textRect = {box->x + PADDING_PX, box->y + box->h/2 - box->textH/2, box->textW, box->textH};
+	SDL_RenderCopy(r, box->textTex, NULL, &textRect);
+}
